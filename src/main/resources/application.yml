@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: security-filter-chain
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.security.web.access.intercept: DEBUG
+    com.example.securityfilterchain: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

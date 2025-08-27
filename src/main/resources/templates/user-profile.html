@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 프로필 - Filter Chain Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: linear-gradient(135deg, #FF7043 0%, #FF5722 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            color: #D84315;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #FF7043;
+            padding-bottom: 20px;
+        }
+        .profile-section {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .profile-card {
+            background: #FFF3E0;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #FFB74D;
+            text-align: center;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #FF7043;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 15px;
+        }
+        .profile-details {
+            background: #F3E5F5;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #CE93D8;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #E1BEE7;
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .permission-list {
+            background: #E8F5E8;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #A5D6A7;
+        }
+        .permission-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+        }
+        .permission-check {
+            color: #4CAF50;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .permission-cross {
+            color: #F44336;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .filter-chain-info {
+            background: #E3F2FD;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            border: 1px solid #90CAF9;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .btn-home {
+            background: #007bff;
+            color: white;
+        }
+        .btn-home:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .btn-admin {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-admin:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        .btn-logout {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-logout:hover {
+            background: #545b62;
+        }
+        .security-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .profile-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>👤 사용자 프로필</h1>
+        <p><span class="security-badge">USER 권한 필요</span></p>
+    </div>
+
+    <div class="profile-section">
+        <!-- 프로필 카드 -->
+        <div class="profile-card">
+            <div class="profile-avatar">
+                👤
+            </div>
+            <h3 th:text="${username ?: 'Unknown User'}">사용자명</h3>
+            <p>일반 사용자</p>
+            <div style="margin-top: 15px;">
+                    <span style="background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                        🔐 인증됨
+                    </span>
+            </div>
+        </div>
+
+        <!-- 상세 정보 -->
+        <div class="profile-details">
+            <h4>📋 계정 정보</h4>
+            <div class="detail-item">
+                <strong>사용자명:</strong>
+                <span th:text="${username ?: 'Unknown'}">username</span>
+            </div>
+            <div class="detail-item">
+                <strong>접근 시간:</strong>
+                <span id="access-time"></span>
+            </div>
+            <div class="detail-item">
+                <strong>세션 상태:</strong>
+                <span style="color: #4CAF50;">✅ 활성</span>
+            </div>
+            <div class="detail-item">
+                <strong>권한 레벨:</strong>
+                <span>USER</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 권한 정보 -->
+    <div class="permission-list">
+        <h4>🎯 접근 가능한 리소스</h4>
+        <div class="permission-item">
+            <span class="permission-check">✅</span>
+            <span><strong>/user/**</strong> - 사용자 전용 페이지들</span>
+        </div>
+        <div class="permission-item">
+            <span class="permission-check">✅</span>
+            <span><strong>/public/**</strong> - 공개 페이지들</span>
+        </div>
+        <div class="permission-item">
+            <span class="permission-check">✅</span>
+            <span><strong>/</strong> - 홈 페이지</span>
+        </div>
+        <div class="permission-item">
+            <span class="permission-cross">❌</span>
+            <span><strong>/admin/**</strong> - 관리자 전용 페이지들 (ADMIN 권한 필요)</span>
+        </div>
+    </div>
+
+    <!-- 필터 체인 정보 -->
+    <div class="filter-chain-info">
+        <h4>🔗 이 페이지 접근 시 실행된 필터들</h4>
+        <ol>
+            <li><strong>SecurityContextHolderFilter</strong> - 인증 정보 로드</li>
+            <li><strong>UsernamePasswordAuthenticationFilter</strong> - 로그인 처리</li>
+            <li><strong>AnonymousAuthenticationFilter</strong> - 익명 사용자 체크 (Skip)</li>
+            <li><strong>AuthorizationFilter</strong> - USER 권한 확인 ✅</li>
+            <li><strong>커스텀 로깅 필터들</strong> - 요청/응답 로깅</li>
+        </ol>
+        <p style="margin-top: 15px; font-style: italic; color: #666;">
+            💡 콘솔에서 "<strong>🔍 [FILTER]</strong>" 로그를 확인하여 실제 필터 실행 순서를 관찰해보세요!
+        </p>
+    </div>
+
+    <!-- 네비게이션 -->
+    <div class="nav-buttons">
+        <a href="/" class="btn btn-home">🏠 홈으로</a>
+        <a href="/admin/dashboard" class="btn btn-admin">👨‍💼 관리자 페이지 (권한 테스트)</a>
+    </div>
+
+    <!-- 로그아웃 -->
+    <div style="text-align: center; margin-top: 30px;" sec:authorize="isAuthenticated()">
+        <form method="post" action="/logout" style="display: inline;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-logout">🚪 로그아웃</button>
+        </form>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+        <p>🛡️ 이 페이지는 USER 또는 ADMIN 권한을 가진 인증된 사용자만 접근할 수 있습니다.</p>
+    </div>
+</div>
+
+<script>
+    // 현재 시간 표시
+    document.getElementById('access-time').textContent = new Date().toLocaleString('ko-KR');
+</script>
+</body>
+</html>

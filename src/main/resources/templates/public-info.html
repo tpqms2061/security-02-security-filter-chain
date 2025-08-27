@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공개 정보 - Filter Chain Demo</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 40px;
+          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+          min-height: 100vh;
+          color: white;
+        }
+        .container {
+          max-width: 800px;
+          margin: 0 auto;
+          background: rgba(255, 255, 255, 0.95);
+          padding: 30px;
+          border-radius: 15px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+          color: #333;
+        }
+        .header {
+          text-align: center;
+          color: #2E7D32;
+          margin-bottom: 30px;
+          border-bottom: 3px solid #4CAF50;
+          padding-bottom: 20px;
+        }
+        .info-box {
+          background: #E8F5E8;
+          border: 1px solid #4CAF50;
+          padding: 20px;
+          border-radius: 10px;
+          margin: 20px 0;
+        }
+        .feature-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+          margin: 30px 0;
+        }
+        .feature-item {
+          background: #f8f9fa;
+          padding: 20px;
+          border-radius: 10px;
+          border-left: 4px solid #4CAF50;
+          transition: transform 0.3s;
+        }
+        .feature-item:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        .nav-buttons {
+          display: flex;
+          gap: 15px;
+          justify-content: center;
+          margin: 30px 0;
+        }
+        .btn {
+          padding: 12px 24px;
+          border: none;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: bold;
+          transition: all 0.3s;
+          cursor: pointer;
+        }
+        .btn-home {
+          background: #007bff;
+          color: white;
+        }
+        .btn-home:hover {
+          background: #0056b3;
+          transform: translateY(-2px);
+        }
+        .btn-login {
+          background: #28a745;
+          color: white;
+        }
+        .btn-login:hover {
+          background: #1e7e34;
+          transform: translateY(-2px);
+        }
+        .filter-info {
+          background: #FFF3CD;
+          border: 1px solid #FFEAA7;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 20px 0;
+        }
+        .status-indicator {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #4CAF50;
+          margin-right: 10px;
+          animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+          0% { opacity: 1; }
+          50% { opacity: 0.5; }
+          100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🌍 공개 정보 페이지</h1>
+        <p><span class="status-indicator"></span>인증 없이 접근 가능한 페이지</p>
+    </div>
+
+    <div class="info-box">
+        <h3>🔓 공개 접근 권한</h3>
+        <p>이 페이지는 <strong>로그인 없이도 접근 가능</strong>합니다. Spring Security에서 <code>/public/**</code> 경로로 설정되어 있어 인증이 필요하지 않습니다.</p>
+    </div>
+
+    <div class="filter-info">
+        <h4>📋 이 페이지에서 실행되는 필터들</h4>
+        <ul>
+            <li><strong>SecurityContextHolderFilter</strong> - 보안 컨텍스트 관리</li>
+            <li><strong>AnonymousAuthenticationFilter</strong> - 익명 사용자로 처리</li>
+            <li><strong>AuthorizationFilter</strong> - 권한 검사 (통과 ✅)</li>
+            <li><strong>커스텀 로깅 필터들</strong> - 요청 로깅</li>
+        </ul>
+    </div>
+
+    <div class="feature-list">
+        <div class="feature-item">
+            <h4>🚀 빠른 접근</h4>
+            <p>인증 과정 없이 바로 접근 가능하여 로딩 속도가 빠릅니다.</p>
+        </div>
+        <div class="feature-item">
+            <h4>📊 공개 정보</h4>
+            <p>회사 소개, 제품 정보, 연락처 등 공개적으로 제공되는 정보를 확인할 수 있습니다.</p>
+        </div>
+        <div class="feature-item">
+            <h4>🔍 SEO 친화적</h4>
+            <p>검색 엔진이 쉽게 접근할 수 있어 SEO 최적화에 유리합니다.</p>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h4>🛡️ 보안 필터 체인 동작 확인</h4>
+        <p>브라우저 개발자 도구의 Network 탭에서 이 페이지 요청 시 <strong>Status 200 OK</strong>가 바로 반환되는 것을 확인할 수 있습니다. 로그인 페이지로 리다이렉트되지 않습니다.</p>
+    </div>
+
+    <div class="nav-buttons">
+        <a href="/" class="btn btn-home">🏠 홈으로</a>
+        <a href="/login" class="btn btn-login">🔐 로그인</a>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+        <p>💡 <strong>팁:</strong> 개발자 도구 콘솔에서 필터 체인 로그를 확인해보세요!</p>
+    </div>
+</div>
+</body>
+</html>

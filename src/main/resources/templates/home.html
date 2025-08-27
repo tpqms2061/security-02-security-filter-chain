@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Filter Chain 실습</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; color: #333; margin-bottom: 30px; border-bottom: 2px solid #007bff; padding-bottom: 20px; }
+        .info-section { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .test-section { background: #f0f4f8; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .navigation { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .nav-button { display: block; padding: 12px 20px; background: #007bff; color: white; text-decoration: none; text-align: center; border-radius: 8px; transition: all 0.3s; }
+        .nav-button:hover { background: #0056b3; transform: translateY(-1px); }
+        .nav-button.public { background: #28a745; }
+        .nav-button.public:hover { background: #1e7e34; }
+        .nav-button.user { background: #fd7e14; }
+        .nav-button.user:hover { background: #e8590c; }
+        .nav-button.admin { background: #dc3545; }
+        .nav-button.admin:hover { background: #c82333; }
+        .status-box { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .logout-section { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; }
+        .logout-button { padding: 10px 30px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .instruction { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🔗 Security Filter Chain 실습</h1>
+        <p>필터 실행 순서와 보안 동작을 로그로 확인해보세요</p>
+    </div>
+
+    <!-- 현재 인증 상태 표시 -->
+    <div class="status-box" th:if="${username}">
+        <h3>🔐 현재 인증 상태</h3>
+        <p><strong>사용자:</strong> <span th:text="${username}">사용자명</span></p>
+        <p><strong>권한:</strong>
+            <span th:each="auth : ${authorities}">
+                    <span th:text="${auth.authority}">권한</span>&nbsp;
+                </span>
+        </p>
+    </div>
+
+    <div class="status-box" th:unless="${username}">
+        <h3>👤 인증되지 않은 상태</h3>
+        <p>로그인 후 더 많은 기능을 사용할 수 있습니다.</p>
+    </div>
+
+    <!-- 필터 테스트 안내 -->
+    <div class="instruction">
+        <h3>📋 필터 체인 테스트 방법</h3>
+        <ol>
+            <li><strong>콘솔/로그 창을 열어두세요</strong> - 필터 실행 순서를 확인할 수 있습니다</li>
+            <li><strong>아래 버튼들을 클릭</strong>하여 다양한 권한 레벨 테스트</li>
+            <li><strong>로그 패턴 관찰</strong>: 🎬 요청 시작 → 🔍 필터 실행 → ✅ 완료 순서</li>
+            <li><strong>인증 상태에 따른</strong> 필터 동작 차이 확인</li>
+        </ol>
+    </div>
+
+    <!-- 테스트 네비게이션 -->
+    <div class="test-section">
+        <h3>🧪 Filter Chain 테스트</h3>
+        <div class="navigation">
+            <a href="/public/info" class="nav-button public">🌍 공개 페이지<br><small>인증 불필요</small></a>
+            <a href="/user/profile" class="nav-button user">👤 사용자 페이지<br><small>USER 권한 필요</small></a>
+            <a href="/admin/dashboard" class="nav-button admin">👨‍💼 관리자 페이지<br><small>ADMIN 권한 필요</small></a>
+            <a href="/" class="nav-button">🏠 홈 새로고침<br><small>인증 상태 확인</small></a>
+        </div>
+    </div>
+
+    <!-- 로그 확인 안내 -->
+    <div class="info-section">
+        <h3>📊 예상되는 로그 패턴</h3>
+        <pre style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; font-size: 12px; overflow-x: auto;">
+🎬 [REQUEST START] GET /user/profile
+👤 [AUTH STATUS] Not authenticated
+🔍 [FILTER-1] CUSTOM-EARLY BEFORE - URI: /user/profile
+🔍 [FILTER] UsernamePasswordAuthenticationFilter 실행
+🔍 [FILTER] AuthorizationFilter 실행
+❌ [SECURITY] Access Denied - 권한 없음
+🔄 Redirecting to /login
+            </pre>
+    </div>
+
+    <!-- 로그아웃 -->
+    <div class="logout-section" sec:authorize="isAuthenticated()">
+        <form method="post" action="/logout">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="logout-button">🚪 로그아웃</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
